@@ -51,6 +51,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 	comparison_vector(0) = 0;
 	range_cond->addComparison (pcl::TfQuadraticXYZComparison<pcl::PointXYZ>::ConstPtr (new pcl::TfQuadraticXYZComparison<pcl::PointXYZ> (pcl::ComparisonOps::LT, comparison_matrix, comparison_vector, -5)));
 	pcl::ConditionalRemoval<pcl::PointXYZ> condrem (range_cond);
+
 	// build the filter 
 	condrem.setCondition(range_cond);
 	condrem.setInputCloud (cloud_filtered); 
