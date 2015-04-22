@@ -17,7 +17,6 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
-#include <mcl_msgs/PointCloud2Array.h>
 #include <pcl/common/eigen.h>
 #include <pcl/filters/filter.h>
 
@@ -44,15 +43,29 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 
 	// create quadratic conditional to find drone
 	pcl::ConditionAnd<pcl::PointXYZ>::Ptr range_cond (new pcl::ConditionAnd<pcl::PointXYZ> ());
-	Eigen::Matrix3f comparison_matrix = Eigen::Matrix3f::Zero();
-	comparison_matrix(0,0) = 1;
-	comparison_matrix(1,1) = 1;
-	comparison_matrix(2,2) = 1;
-	Eigen::Vector3f comparison_vector;
-	comparison_vector(0) = 1;
-	comparison_vector(0) = 0;
-	comparison_vector(0) = 0;
-	range_cond->addComparison (pcl::TfQuadraticXYZComparison<pcl::PointXYZ>::ConstPtr (new pcl::TfQuadraticXYZComparison<pcl::PointXYZ> (pcl::ComparisonOps::LT, comparison_matrix, comparison_vector, -5)));
+	Eigen::Matrix3f comparison_matrix0 = Eigen::Matrix3f::Zero();
+	comparison_matrix0(0,0) = 1;
+	comparison_matrix0(1,1) = 1;
+	comparison_matrix0(2,2) = 1;
+	Eigen::Vector3f comparison_vector0;
+	comparison_vector0(0) = 1;
+	comparison_vector0(1) = 0;
+	comparison_vector0(2) = 0;
+	range_cond->addComparison (pcl::TfQuadraticXYZComparison<pcl::PointXYZ>::ConstPtr (new pcl::TfQuadraticXYZComparison<pcl::PointXYZ> (pcl::ComparisonOps::LT, comparison_matrix0, comparison_vector0, -5)));
+	/*
+	Eigen::Matrix3f comparison_matrix1 = Eigen::Matrix3f::Zero();
+	Eigen::Vector3f comparison_vector1;
+	comparison_vector1(0) = 0;
+	comparison_vector1(1) = 1;
+	comparison_vector1(2) = 0;
+	range_cond->addComparison (pcl::TfQuadraticXYZComparison<pcl::PointXYZ>::ConstPtr (new pcl::TfQuadraticXYZComparison<pcl::PointXYZ> (pcl::ComparisonOps::GT, comparison_matrix1, comparison_vector1, -100)));
+	Eigen::Matrix3f comparison_matrix2 = Eigen::Matrix3f::Zero();
+	Eigen::Vector3f comparison_vector2;
+	comparison_vector2(0) = 0;
+	comparison_vector2(1) = 1;
+	comparison_vector2(2) = 0;
+	range_cond->addComparison (pcl::TfQuadraticXYZComparison<pcl::PointXYZ>::ConstPtr (new pcl::TfQuadraticXYZComparison<pcl::PointXYZ> (pcl::ComparisonOps::LT, comparison_matrix2, comparison_vector2, 100)));
+	*/
 	pcl::ConditionalRemoval<pcl::PointXYZ> condrem (range_cond);
 
 	// build the filter 
@@ -98,7 +111,10 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 		pcl::PointXYZ min_pt, max_pt; 
 		pcl::getMinMax3D(*cloud_cluster, min_pt, max_pt);
 		//std::cout << "Cluster height0=" << max_pt.y - min_pt.y << "\n";
-		if (max_pt.y - min_pt.y > 0.5) continue;
+		if (max_pt.y - min_pt.y > 0.20) continue;
+		//std::cout << "z dist=" << max_pt.z - min_pt.z << "\n";
+		//std::cout << "y dist=" << max_pt.y - min_pt.y << "\n";
+		//std::cout << "x dist=" << max_pt.x - min_pt.x << "\n";
 		//std::cout << "Cluster height1=" << max_pt.y - min_pt.y << "\n";
 		if (cloud_cluster->size() > largest_cluster_size)
 		{
@@ -126,8 +142,8 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 	out_pos.point.y = centroid[1];
 	out_pos.point.z = centroid[2];
 	geometry_msgs::PointStamped base_point;
-    	listener->transformPoint("torso", out_pos, base_point);
-	_pub_drone_pos.publish(base_point);
+    	//listener->transformPoint("torso", out_pos, base_point);
+	//_pub_drone_pos.publish(base_point);
 
 
 }
@@ -135,9 +151,9 @@ int main (int argc, char** argv)
 {
 	ros::init (argc, argv, "drone_depth_tracking");
 	ros::NodeHandle nh;
-	listener = new tf::TransformListener(ros::Duration(10));
+	listener = new tf::TransformListener();
 	// ROS subscriber for point cloud
-	_sub_cloud = nh.subscribe("/camera/depth/points", 2, cloud_cb);
+	_sub_cloud = nh.subscribe("/camera/depth_registered/points", 2, cloud_cb);
 
 	// create ROS publisher for transformed pointcloud
 	_pub_filtered = nh.advertise<sensor_msgs::PointCloud2>("filterd_cloud", 1);
