@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import print_function
 
 # Import the necessary Python modules
@@ -87,12 +88,12 @@ def test_angle_finder():
 if __name__ == '__main__':
     #test_angle_finder()
     #sys.exit()
-    if len(sys.argv) > 2:
-    	raise Exception("Usage: 1 optional argument giving the topic on which commands are broadcast.")
-    elif len(sys.argv) == 2:
-    	topic = sys.argv[1]
-    else:
-    	topic = "/point_cmd"
+    #if len(sys.argv) > 2:
+    #	raise Exception("Usage: 1 optional argument giving the topic on which commands are broadcast.")
+    #elif len(sys.argv) == 2:
+    #	topic = sys.argv[1]
+    #else:
+    topic = "/point_cmd"
     try:
         start_node(topic)
     except rospy.ROSInterruptException:

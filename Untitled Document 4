@@ -1,0 +1,9 @@
+<launch>
+  <include file="$(find xtion_launch)/launch/xtion.launch"/>
+  <node pkg="soundplay" type="soundplay_node.py" name="soundplay" output="screen"/>
+  <node pkg="drone_tracker_demo" type="drone_tracker_demo_node" name="drone_tracker" output="screen"/>
+  <node pkg="sphinx_mcl" type="sphinx_mcl_node " name="sphinx_mcl" output="screen"/>
+  <node pkg="drone_tracker_demo" type="pointing.py" name="pointing_server" output="screen"/>
+  <node pkg="sphinx_mcl" type="cmd_process.py" name="sphinx_cmd_process" output="screen"/>
+</launch>
+

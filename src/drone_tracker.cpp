@@ -1,5 +1,8 @@
 #include <ros/ros.h>
 #include <geometry_msgs/PointStamped.h>
+#include <tf/transform_listener.h>
+
+#include <geometry_msgs/PointStamped.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/common.h>
@@ -21,7 +24,7 @@
 ros::Publisher _pub_filtered;
 ros::Publisher _pub_drone_pos;
 ros::Subscriber _sub_cloud;
-
+tf::TransformListener* listener;
 
 void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 {
@@ -78,7 +81,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 	ec.setInputCloud (cloud_filtered);
 	ec.extract (cluster_indices);
 
-	std::cout << "num clusters= " << cluster_indices.size() << "\n";
+	//std::cout << "num clusters= " << cluster_indices.size() << "\n";
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr drone_cluster (new pcl::PointCloud<pcl::PointXYZ>);
 	int largest_cluster_size = 0;
@@ -92,6 +95,11 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 		{
 			cloud_cluster->points.push_back (cloud_filtered->points[*pit]); 
 		}
+		pcl::PointXYZ min_pt, max_pt; 
+		pcl::getMinMax3D(*cloud_cluster, min_pt, max_pt);
+		//std::cout << "Cluster height0=" << max_pt.y - min_pt.y << "\n";
+		if (max_pt.y - min_pt.y > 0.5) continue;
+		//std::cout << "Cluster height1=" << max_pt.y - min_pt.y << "\n";
 		if (cloud_cluster->size() > largest_cluster_size)
 		{
 			drone_cluster = cloud_cluster;
@@ -102,21 +110,24 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 	// find centroid
 	Eigen::Vector4f centroid;
 	pcl::compute3DCentroid (*drone_cluster, centroid);
-	std::cout << "centroid:" << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << " \n";
+	//std::cout << "centroid:" << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << " \n";
 
 	// publish largest cluster
 	sensor_msgs::PointCloud2 out_cloud;
-	pcl::toROSMsg( *cloud_filtered, out_cloud);
+	pcl::toROSMsg( *drone_cluster, out_cloud);
 	out_cloud.header.frame_id="camera_depth_optical_frame";
 	_pub_filtered.publish(out_cloud);
 
 	// publish centroid 
 	geometry_msgs::PointStamped out_pos;
+  	out_pos.header.frame_id = "camera_depth_optical_frame";
+	out_pos.header.stamp = ros::Time();
 	out_pos.point.x = centroid[0];
 	out_pos.point.y = centroid[1];
 	out_pos.point.z = centroid[2];
-	out_pos.header.frame_id="camera_depth_optical_frame";
-	_pub_drone_pos.publish(out_pos);
+	geometry_msgs::PointStamped base_point;
+    	listener->transformPoint("torso", out_pos, base_point);
+	_pub_drone_pos.publish(base_point);
 
 
 }
@@ -124,7 +135,7 @@ int main (int argc, char** argv)
 {
 	ros::init (argc, argv, "drone_depth_tracking");
 	ros::NodeHandle nh;
-
+	listener = new tf::TransformListener(ros::Duration(10));
 	// ROS subscriber for point cloud
 	_sub_cloud = nh.subscribe("/camera/depth/points", 2, cloud_cb);
 
@@ -132,7 +143,7 @@ int main (int argc, char** argv)
 	_pub_filtered = nh.advertise<sensor_msgs::PointCloud2>("filterd_cloud", 1);
 
 	// create ROS publisher for drone position (x,y,z)
-	_pub_drone_pos = nh.advertise<geometry_msgs::PointStamped>("point_cmd", 1);
+	_pub_drone_pos = nh.advertise<geometry_msgs::PointStamped>("quad_pos", 1);
 
 	// spin
 	ros::spin ();
