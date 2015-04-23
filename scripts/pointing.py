@@ -16,6 +16,11 @@ import baxter_interface
 #Message carrying location of target
 from geometry_msgs.msg import Point
 
+from sound_play.msg import SoundRequest
+from sound_play.libsoundplay import SoundClient
+
+pub_audio = None
+
 def point_joint_angles(target):
 	'''
 	target is a numpy array or python list containing the 3d location of the thing to be pointed at, using robot-centered coordinates.
@@ -63,6 +68,12 @@ def point_callback(data):
 		data.z]), threshold = 0.05)
 		#limb.move_to_joint_positions(angles) #blocking
 	else:
+                msg = SoundRequest()
+                msg.sound = -3
+                msg.command = 1
+                msg.arg = 'Quad is out of pointing range'
+                msg.arg2 = 'voice_kal_diphone'
+                pub_audio.publish(msg)
 		rospy.loginfo("Point: target out of pointing range " + str(data))
 	
 def start_node(targetTopic):
@@ -94,6 +105,7 @@ if __name__ == '__main__':
     #	topic = sys.argv[1]
     #else:
     topic = "/point_cmd"
+    pub_audio = rospy.Publisher('robotsound', SoundRequest, queue_size=10)
     try:
         start_node(topic)
     except rospy.ROSInterruptException:
