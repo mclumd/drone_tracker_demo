@@ -1,5 +1,6 @@
 <launch>
-  <include file="$(find xtion_launch)/launch/xtion.launch"/>
+  <node pkg="rosrun baxter_tools" type="enable_robot.py" name="bax_enable" args="-e"/>
+  <node pkg="rosrun baxter_tools" type="tuck_arms.py" name="bax_tuck" args="-u"/>
   <node pkg="sound_play" type="soundplay_node.py" name="response_server" output="screen"/>
   <node pkg="sphinx_mcl" type="sphinx_mcl_node" name="sphinx_mcl" output="screen"/>
 </launch>

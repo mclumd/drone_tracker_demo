@@ -1,7 +1,5 @@
 <launch>
   <include file="$(find xtion_launch)/launch/xtion.launch"/>
-  <node pkg="rosrun baxter_tools" type="enable_robot.py" name="bax_enable" args="-e"/>
-  <node pkg="rosrun baxter_tools" type="tuck_arms.py" name="bax_tuck" args="-u"/>
   <node pkg="drone_tracker_demo" type="drone_tracker_demo_node" name="drone_tracker"/>
   <node pkg="drone_tracker_demo" type="pointing.py" name="pointing_server" output="screen"/>
   <node pkg="sphinx_mcl" type="cmd_process.py" name="sphinx_cmd_process" output="screen"/>
