@@ -15,11 +15,14 @@ import baxter_interface
 
 #Message carrying location of target
 from geometry_msgs.msg import Point
-
+from std_msgs.msg import String
 from sound_play.msg import SoundRequest
 from sound_play.libsoundplay import SoundClient
 
 pub_audio = None
+sub_cmd = None
+sub_arm = None
+
 
 def point_joint_angles(target):
 	'''
@@ -59,27 +62,38 @@ def check_range(target):
 	return right_s0 < 1.55 and right_s0 > -1.6 and right_s1 < 1 and right_s1 > -1.35
 
 def point_callback(data):
-	limb = baxter_interface.Limb('right')
+	limbr = baxter_interface.Limb('right')
+	limbl = baxter_interface.Limb('left')
 	if data.x == 0 and data.y == 0 and data.z == 0:
 		rospy.loginfo("Point: got a stop command (all zeros)")
 	elif check_range([data.x, data.y, data.z]):
 		rospy.loginfo("Point: setting target to" + str(data))
-		limb.move_to_joint_positions(point_joint_angles([data.x, data.y, 
+		limbr.move_to_joint_positions(point_joint_angles([data.x, data.y, 
 		data.z]), threshold = 0.05)
 		#limb.move_to_joint_positions(angles) #blocking
 	else:
-                msg = SoundRequest()
-                msg.sound = -3
-                msg.command = 1
-                msg.arg = 'Quad is out of pointing range'
-                msg.arg2 = 'voice_kal_diphone'
-                pub_audio.publish(msg)
+		msg = SoundRequest()
+		msg.sound = -3
+		msg.command = 1
+		msg.arg = 'Quad is out of pointing range'
+		msg.arg2 = 'voice_kal_diphone'
+		pub_audio.publish(msg)
 		rospy.loginfo("Point: target out of pointing range " + str(data))
-	
-def start_node(targetTopic):
+
+def arm_callback(data):
+	if data.data == "move your right arm to the side":
+		angles = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+		limbr.move_to_joint_positions(angles)       
+	elif data.data == "move your left arm to the side":
+		angles = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+		limbr.move_to_joint_positions(angles)
+
+def start_node():
 	rospy.init_node('baxter_point')
 	rospy.loginfo("Reading point commands from topic " + targetTopic)
-	rospy.Subscriber(targetTopic, Point, point_callback)
+	pub_audio = rospy.Publisher('robotsound', SoundRequest, queue_size=10)
+	sub_cmd = rospy.Subscriber("point_cmd", Point, point_callback)
+	sub_arm = rospy.Subscriber("arm_cmd", String, arm_callback)
 	rospy.spin()
 
 def test_angle_finder():
@@ -97,16 +111,7 @@ def test_angle_finder():
 		
 
 if __name__ == '__main__':
-    #test_angle_finder()
-    #sys.exit()
-    #if len(sys.argv) > 2:
-    #	raise Exception("Usage: 1 optional argument giving the topic on which commands are broadcast.")
-    #elif len(sys.argv) == 2:
-    #	topic = sys.argv[1]
-    #else:
-    topic = "/point_cmd"
-    pub_audio = rospy.Publisher('robotsound', SoundRequest, queue_size=10)
     try:
-        start_node(topic)
+        start_node()
     except rospy.ROSInterruptException:
         pass
