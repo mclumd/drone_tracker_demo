@@ -22,8 +22,8 @@ from sound_play.libsoundplay import SoundClient
 pub_audio = None
 sub_cmd = None
 sub_arm = None
-anglesr = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
-anglesl = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+anglesr = {'right_s0': -0.4724660821289063, 'right_s1': -0.23623304106445314, 'right_w0': 0.02032524541625977, 'right_w1': 0.25885925765991213, 'right_w2': 0.027611654150390626, 'right_e0': 0.13230584280395508, 'right_e1': 1.6739565328674317}
+anglesl = {'left_w0': 0.5878981362854004, 'left_w1': -0.17564080001220705, 'left_w2': -1.0392719826049805, 'left_e0': 0.00728640873413086, 'left_e1': 1.8074128612609865, 'left_s0': 0.5744758044067383, 'left_s1': -0.2297136227233887}
 
 def point_joint_angles(target):
 	'''
