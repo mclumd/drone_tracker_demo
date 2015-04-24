@@ -92,7 +92,7 @@ def arm_callback(data):
 		msg.arg = 'Moving my right arm to the side'
 		msg.arg2 = 'voice_kal_diphone'
 		pub_audio.publish(msg)
-		limbr.move_to_joint_positions(angles)       
+		limbr.move_to_joint_positions(anglesr)       
 	elif data.data == "left_arm_side":
 		#anglesl = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
 		msg = SoundRequest()
@@ -101,7 +101,7 @@ def arm_callback(data):
 		msg.arg = 'Moving my left arm to the side'
 		msg.arg2 = 'voice_kal_diphone'
 		pub_audio.publish(msg)
-		limbr.move_to_joint_positions(angles)
+		limbl.move_to_joint_positions(anglesl)
 	elif data.data == "left_arm_side":
 		#anglesr = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
 		#anglesl = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
