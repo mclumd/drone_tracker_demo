@@ -142,8 +142,8 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& msg)
 	out_pos.point.y = centroid[1];
 	out_pos.point.z = centroid[2];
 	geometry_msgs::PointStamped base_point;
-    	//listener->transformPoint("torso", out_pos, base_point);
-	//_pub_drone_pos.publish(base_point);
+    	listener->transformPoint("torso", out_pos, base_point);
+	_pub_drone_pos.publish(base_point);
 
 
 }
