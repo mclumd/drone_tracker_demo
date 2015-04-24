@@ -22,7 +22,8 @@ from sound_play.libsoundplay import SoundClient
 pub_audio = None
 sub_cmd = None
 sub_arm = None
-
+anglesr = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+anglesl = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
 
 def point_joint_angles(target):
 	'''
@@ -70,6 +71,8 @@ def point_callback(data):
 		rospy.loginfo("Point: setting target to" + str(data))
 		limbr.move_to_joint_positions(point_joint_angles([data.x, data.y, 
 		data.z]), threshold = 0.05)
+		rospy.sleep(2)
+		limbr.move_to_joint_positions(anglesr, threshold = 0.05)
 		#limb.move_to_joint_positions(angles) #blocking
 	else:
 		msg = SoundRequest()
@@ -81,16 +84,39 @@ def point_callback(data):
 		rospy.loginfo("Point: target out of pointing range " + str(data))
 
 def arm_callback(data):
-	if data.data == "move your right arm to the side":
-		angles = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+	if data.data == "right_arm_side":
+		#anglesr = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+		msg = SoundRequest()
+		msg.sound = -3
+		msg.command = 1
+		msg.arg = 'Moving my right arm to the side'
+		msg.arg2 = 'voice_kal_diphone'
+		pub_audio.publish(msg)
 		limbr.move_to_joint_positions(angles)       
-	elif data.data == "move your left arm to the side":
-		angles = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+	elif data.data == "left_arm_side":
+		#anglesl = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+		msg = SoundRequest()
+		msg.sound = -3
+		msg.command = 1
+		msg.arg = 'Moving my left arm to the side'
+		msg.arg2 = 'voice_kal_diphone'
+		pub_audio.publish(msg)
 		limbr.move_to_joint_positions(angles)
+	elif data.data == "left_arm_side":
+		#anglesr = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+		#anglesl = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
+		msg = SoundRequest()
+		msg.sound = -3
+		msg.command = 1
+		msg.arg = 'Moving both of my arms to the side'
+		msg.arg2 = 'voice_kal_diphone'
+		pub_audio.publish(msg)
+		limbr.move_to_joint_positions(anglesr)
+		limbl.move_to_joint_positions(anglesl)
 
 def start_node():
 	rospy.init_node('baxter_point')
-	rospy.loginfo("Reading point commands from topic " + targetTopic)
+	#rospy.loginfo("Reading point commands from topic " + targetTopic)
 	pub_audio = rospy.Publisher('robotsound', SoundRequest, queue_size=10)
 	sub_cmd = rospy.Subscriber("point_cmd", Point, point_callback)
 	sub_arm = rospy.Subscriber("arm_cmd", String, arm_callback)
