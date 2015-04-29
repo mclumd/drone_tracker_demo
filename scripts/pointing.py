@@ -24,6 +24,8 @@ sub_cmd = None
 sub_arm = None
 anglesr = {'right_s0': -0.4724660821289063, 'right_s1': -0.23623304106445314, 'right_w0': 0.02032524541625977, 'right_w1': 0.25885925765991213, 'right_w2': 0.027611654150390626, 'right_e0': 0.13230584280395508, 'right_e1': 1.6739565328674317}
 anglesl = {'left_w0': 0.5878981362854004, 'left_w1': -0.17564080001220705, 'left_w2': -1.0392719826049805, 'left_e0': 0.00728640873413086, 'left_e1': 1.8074128612609865, 'left_s0': 0.5744758044067383, 'left_s1': -0.2297136227233887}
+limbr = None
+limbl = None
 
 def point_joint_angles(target):
 	'''
@@ -63,6 +65,9 @@ def check_range(target):
 	return right_s0 < 1.55 and right_s0 > -1.6 and right_s1 < 1 and right_s1 > -1.35
 
 def point_callback(data):
+	global pub_audio
+	global limbr
+	global liml
 	limbr = baxter_interface.Limb('right')
 	limbl = baxter_interface.Limb('left')
 	if data.x == 0 and data.y == 0 and data.z == 0:
@@ -84,6 +89,13 @@ def point_callback(data):
 		rospy.loginfo("Point: target out of pointing range " + str(data))
 
 def arm_callback(data):
+	global pub_audio
+	global limbl
+	global limbr
+	global anglesl
+	global anglesr
+	limbr = baxter_interface.Limb('right')
+        limbl = baxter_interface.Limb('left')
 	if data.data == "right_arm_side":
 		#anglesr = {'right_e0': 0.0, 'right_e1': 0.0, 'right_w0': 0.0, 'right_w1': 0.0, 'right_w2': 0.0}
 		msg = SoundRequest()
@@ -117,6 +129,9 @@ def arm_callback(data):
 def start_node():
 	rospy.init_node('baxter_point')
 	#rospy.loginfo("Reading point commands from topic " + targetTopic)
+	global pub_audio
+	global sub_cmd
+	global sub_arm
 	pub_audio = rospy.Publisher('robotsound', SoundRequest, queue_size=10)
 	sub_cmd = rospy.Subscriber("point_cmd", Point, point_callback)
 	sub_arm = rospy.Subscriber("arm_cmd", String, arm_callback)
