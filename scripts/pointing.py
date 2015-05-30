@@ -76,7 +76,7 @@ def point_callback(data):
 		rospy.loginfo("Point: setting target to" + str(data))
 		limbr.move_to_joint_positions(point_joint_angles([data.x, data.y, 
 		data.z]), threshold = 0.05)
-		rospy.sleep(2)
+		rospy.sleep(5)
 		limbr.move_to_joint_positions(anglesr, threshold = 0.05)
 		#limb.move_to_joint_positions(angles) #blocking
 	else:
